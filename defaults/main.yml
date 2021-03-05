@@ -1,0 +1,2 @@
+nextcloud_service_dir: nextcloud
+nextcloud_path: "{{ services_path }}/{{ nextcloud_service_dir }}"

@@ -1,0 +1,34 @@
+- name: Create directories
+  file:
+    path: "{{ nextcloud_path }}"
+    state: directory
+    owner: "{{ account.user }}"
+    group: "{{ account.user }}"
+  become: yes
+
+- name: Template configuration
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ nextcloud_path }}/{{ item }}"
+  loop:
+    - docker-compose.yml
+    - nextcloud.env
+    - postgres.env
+
+- name: Template Nginx configuration
+  template:
+    src: nginx.conf.j2
+    dest: "{{ nextcloud_path }}/nginx.conf"
+  notify: Restart Nginx
+
+- name: Copy script
+  copy:
+    src: occ
+    dest: "{{ nextcloud_path }}/occ"
+    mode: "0755"
+
+- name: Start NextCloud
+  community.general.docker_compose:
+    project_src: "{{ nextcloud_path }}"
+    state: present
+  become: yes

@@ -1,0 +1,95 @@
+map $http_upgrade $proxy_connection {
+    default upgrade;
+    '' close;
+}
+
+map $scheme $proxy_x_forwarded_ssl {
+    default off;
+    https on;
+}
+
+server {
+    listen 80;
+    server_name {{ nextcloud.domain }};
+    return 301 https://{{ nextcloud.domain }}$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name {{ nextcloud.domain }};
+
+    add_header Referrer-Policy "no-referrer" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Download-Options "noopen" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Permitted-Cross-Domain-Policies "none" always;
+    add_header X-Robots-Tag "none" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+
+    fastcgi_hide_header X-Powered-By;
+
+    proxy_http_version 1.1;
+    proxy_buffering off;
+    proxy_set_header Host $http_host;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $proxy_connection;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Ssl $proxy_x_forwarded_ssl;
+    proxy_set_header Proxy "";
+
+    root {{ nextcloud_path }}/nextcloud;
+
+    location = /robots.txt {
+        allow all;
+    }
+
+    location / {
+        rewrite ^ /index.php;
+    }
+
+    location ~ ^\/(?:\.(?!well-known)|3rdparty|autotest|build|config|console|db_|indie|issue|lib|occ|templates|tests) {
+        deny all;
+    }
+
+    location ~ ^\/.well-known/(?:carddav|caldav) {
+        return 301 $scheme://$host:$server_port/remote.php/dav;
+    }
+
+    location ~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+)\.php(?:$|\/) {
+        fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
+        set $path_info $fastcgi_path_info;
+        try_files $fastcgi_script_name =404;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/html/$fastcgi_script_name;
+        fastcgi_param PATH_INFO $path_info;
+        fastcgi_param modHeadersAvailable true;
+        fastcgi_param front_controller_active true;
+        fastcgi_pass 127.0.0.1:{{ nextcloud.internal_port }};
+        fastcgi_intercept_errors on;
+        fastcgi_request_buffering off;
+    }
+
+    location ~ ^\/(?:updater|oc[ms]-provider)(?:$|\/) {
+        try_files $uri/ =404;
+        index index.php;
+    }
+
+    location ~ \.(?:css|js|woff2?|svg|gif|map)$ {
+        try_files $uri /index.php$request_uri;
+        add_header Cache-Control "public, max-age=15778463";
+        add_header Referrer-Policy "no-referrer" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Download-Options "noopen" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Permitted-Cross-Domain-Policies "none" always;
+        add_header X-Robots-Tag "none" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+    }
+
+    location ~ \.(?:png|html|ttf|ico|jpg|jpeg|bcmap|mp4|webm)$ {
+        try_files $uri /index.php$request_uri;
+    }
+}
