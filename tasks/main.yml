@@ -10,6 +10,7 @@
   template:
     src: "{{ item }}.j2"
     dest: "{{ nextcloud_path }}/{{ item }}"
+    mode: "600"
   loop:
     - docker-compose.yml
     - nextcloud.env

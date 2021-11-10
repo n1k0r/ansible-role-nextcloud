@@ -42,6 +42,10 @@ server {
 
     root {{ nextcloud_path }}/nextcloud;
 
+{% for include_conf in nextcloud.nginx.includes | default([]) %}
+    include {{ include_conf }};
+{% endfor %}
+
     location = /robots.txt {
         allow all;
     }
