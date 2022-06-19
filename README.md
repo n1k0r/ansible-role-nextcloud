@@ -19,5 +19,3 @@ nextcloud:
 ```
 
 External handler "Restart Nginx" is used. Provided by https://gitlab.com/n1k0r-ansible/roles/nginx
-
-Account dictionary is also expected: https://gitlab.com/n1k0r-ansible/roles/master

@@ -2,9 +2,6 @@
   file:
     path: "{{ nextcloud_path }}"
     state: directory
-    owner: "{{ account.user }}"
-    group: "{{ account.user }}"
-  become: yes
 
 - name: Template configuration
   template:
@@ -32,4 +29,3 @@
   community.general.docker_compose:
     project_src: "{{ nextcloud_path }}"
     state: present
-  become: yes
