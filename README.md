@@ -18,4 +18,4 @@ nextcloud:
     - /mnt/hdd
 ```
 
-External handler "Restart Nginx" is used. Provided by https://gitlab.com/n1k0r-ansible/roles/nginx
+External handler "Restart Nginx" is used. Provided by https://github.com/n1k0r/ansible-role-nginx
