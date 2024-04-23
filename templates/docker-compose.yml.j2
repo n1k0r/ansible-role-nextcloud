@@ -1,5 +1,3 @@
-version: "3"
-
 {% set nextcloud_tag = "fpm-alpine" %}
 {% if nextcloud.version is defined %}
   {% set nextcloud_tag = nextcloud.version ~ "-" ~ nextcloud_tag %}

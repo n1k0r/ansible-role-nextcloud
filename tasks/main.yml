@@ -26,6 +26,6 @@
     mode: "0755"
 
 - name: Start NextCloud
-  community.general.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ nextcloud_path }}"
     state: present
